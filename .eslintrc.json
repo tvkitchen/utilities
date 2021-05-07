@@ -1,0 +1,27 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "plugin:@typescript-eslint/all",
+    "airbnb-typescript/base"
+  ],
+  "rules": {
+    "@typescript-eslint/semi": [2, "never"],
+    "@typescript-eslint/indent": [2, "tab"],
+    "no-tabs": 0,
+    "import/prefer-default-export": "off",
+    "import/no-default-export":  "error",
+    "@typescript-eslint/prefer-readonly-parameter-types": "off"
+  },
+  "env": {
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+  "ignorePatterns": [
+    "lib/"
+  ]
+}

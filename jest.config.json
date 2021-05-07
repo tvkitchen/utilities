@@ -1,0 +1,5 @@
+{
+  "coveragePathIgnorePatterns": ["<rootDir>/packages/(?:.+?)/lib/"],
+  "silent": true,
+  "testPathIgnorePatterns": ["<rootDir>/packages/(?:.+?)/lib/"]
+}
