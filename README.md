@@ -19,3 +19,14 @@ This will install project dependencies, link local sibling dependencies (we're u
 ## About the TV Kitchen
 
 TV Kitchen is a project of [Bad Idea Factory](https://biffud.com).  Learn more at [the TV Kitchen project site](https://tv.kitchen).
+
+## Participating
+
+TV Kitchen is an open source project, and we welcome contributions of any kind.
+
+Thank you for considering, and before diving in please follow these steps:
+
+* **Step 1:** read our [code of conduct](https://github.com/tvkitchen/.github/blob/main/CODE_OF_CONDUCT.md).
+* **Step 2:** review our [contribution guide](https://github.com/tvkitchen/.github/blob/main/CONTRIBUTING.md).
+* **Step 3:** make sure your contribution is [related to an issue](https://github.com/tvkitchen/utilities).
+* **Step 4:** review these [testing best practices](https://github.com/goldbergyoni/javascript-testing-best-practices).

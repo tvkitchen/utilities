@@ -1,164 +1,4 @@
-// This fork does not match our code style at all.
-/* eslint-disable */
 
-/* This file is a fork of Logan Kearsley's TS-Demuxer project.
- * To view the original project please go to:
- * https://github.com/gliese1337/HLS.js/tree/master/demuxer
- */
-
-/************ Code below this line is the original TS-Demuxer ****************/
-/* Based on Anton Burdinuk's C++ version:
- * https://github.com/clark15b/tsdemuxer/blob/67a20b47dd4a11282134ee61d390cc64d1083e61/v1.0/tsdemux.cpp
- */
-
-const PACKET_LEN = 188;
-
-export const ErrCodes = [
-	"",
-	"Error 1: Incomplete TS Packet",
-	"Error 2: Invalid Sync Byte",
-	"Error 3: Transport Error",
-	"Error 4: Packet Scrambled",
-	"Error 5: Adaptation Field Overflows File Length",
-	"Error 6: Incomplete PES Packet (Possibly PAT)",
-	"Error 7: Incomplete PAT",
-	"Error 8: Invalid PAT Header",
-	"Error 9: PAT Overflows File Length",
-	"Error 10: PAT Body Isn't a Multiple of the Entry Size (32 bits)",
-	"Error 11: Invalid PAT Entry",
-	"Error 12: Incomplete PES Packet (Possibly PMT)",
-	"Error 13: Incomplete PMT",
-	"Error 14: Invalid PMT Header",
-	"Error 15: PMT Length Too Large",
-	"Error 16: PMT Doesn't Start at Beginning of TS Packet Payload",
-	"Error 17: Program Info Oveflows PMT Length",
-	"Error 18: Incomplete Elementary Stream Info",
-	"Error 19: Invalid Elementary Stream Header",
-	"Error 20: Elementary Stream Data Overflows PMT",
-	"Error 21: Incomplete PES Packet Header",
-	"Error 22: Invalid PES Header",
-	"Error 23: PES Packet Not Long Enough for Extended Header",
-	"Error 24: PES Header Overflows File Length",
-];
-
-const stream_type = {
-	unknown     : 0,
-	audio       : 1,
-	video       : 2,
-
-	// http://en.wikipedia.org/wiki/Program-specific_information#Elementary_stream_types
-	data        : 0,
-	mpeg2_video : 1,
-	h264_video  : 2,
-	vc1_video   : 3,
-	ac3_audio   : 4,
-	mpeg2_audio : 5,
-	lpcm_audio  : 6,
-	aac_audio   : 7,
-};
-
-type Payload = {
-	buffer: Uint8Array[];
-	buflen: number;
-	pts: number;
-	dts: number;
-	frame_ticks: number;
-};
-
-export type Packet = {
-	data: Uint8Array;
-	pts: number;
-	dts: number;
-	frame_ticks:   number;
-	program:       number; // program number (1,2 ...)
-	stream_number: number; // stream number in program
-	type:          number; // media type / encoding
-	stream_id:     number; // MPEG stream id
-	content_type:  number; // 1 - audio, 2 - video
-	frame_num:     number;
-};
-
-class Stream {
-	public program = 0xffff;  // program number (1,2 ...)
-	public id = 0;            // stream number in program
-	public type = 0xff;
-	public stream_id = 0;     // MPEG stream id
-	public content_type = 0;  // 1 - audio, 2 - video
-	public dts = 0;           // current MPEG stream DTS (presentation time for audio, decode time for video)
-	public has_dts = false;
-	public first_pts = 0;
-	public last_pts = 0;
-	public has_pts = false;
-	public frame_ticks = 0;   // current time to show frame in ticks (90 ticks = 1 ms, 90000/frame_ticks=fps)
-	public frame_num = 0;     // frame count
-	private payload: Payload | null = null;
-
-	finalize(): Packet | null {
-		const { payload } = this;
-		if (payload === null) return null;
-		let data: Uint8Array;
-		if (payload.buffer.length === 1) {
-			data = payload.buffer[0];
-		} else {
-			data = new Uint8Array(payload.buflen);
-			let offset = 0;
-			for (const b of payload.buffer) {
-				data.set(b, offset);
-				offset += b.byteLength;
-			}
-		}
-		return {
-			data,
-			pts: payload.pts,
-			dts: payload.dts,
-			frame_ticks: payload.frame_ticks,
-			program: this.program,
-			stream_number: this.id,
-			stream_id: this.stream_id,
-			type: this.type,
-			content_type: this.content_type,
-			frame_num: this.frame_num,
-		};
-	}
-
-	write(
-		mem: DataView, ptr: number, len: number,
-		pstart: number, copy: boolean,
-	): Packet | null {
-		const { payload } = this;
-		let data = new Uint8Array(mem.buffer, mem.byteOffset + ptr, len);
-		if (copy) data = data.slice();
-		if (pstart || payload === null) {
-			// finalize previously accumulated packet
-			const packet = this.finalize();
-			// start new packet
-			this.payload = {
-				buffer: [data],
-				buflen: len,
-				pts: this.last_pts,
-				dts: this.dts,
-				frame_ticks: this.frame_ticks,
-			};
-			return packet;
-		}
-		payload.buffer.push(data);
-		payload.buflen += len;
-
-		return null;
-	}
-}
-
-class PMT {
-	public mem = new DataView(new ArrayBuffer(512));
-	public ptr = 0;
-	public len = 0;
-	public offset = 0;
-
-	reset(l: number): void {
-		this.len = l;
-		this.offset = 0;
-	}
-}
 
 function get_stream(pids: Map<number, Stream>, pid: number): Stream {
 	if (!pids.has(pid)) { pids.set(pid, new Stream()); }
@@ -347,6 +187,7 @@ function decode_pmt(
 	return 0;
 }
 
+
 function decode_pes(
 	mem: DataView, ptr: number, len: number,
 	s: Stream, pstart: number,
@@ -435,7 +276,9 @@ function decode_pes(
 	return 0;
 }
 
-function demux_packet(
+
+
+export function demux_packet(
 	pmt: PMT,
 	mem: DataView, ptr: number,
 	pids: Map<number, Stream>,
@@ -477,58 +320,4 @@ function demux_packet(
 		return decode_pmt(pmt, mem, ptr, len, pids, s, payload_start);
 	}
 	return decode_pes(mem, ptr, len, s, payload_start, cb, copy);
-}
-
-export class TSDemuxer {
-	private pmt = new PMT();
-	private leftover = new Uint8Array(PACKET_LEN);
-	private lview = new DataView(this.leftover.buffer);
-	private ptr = 0;
-	public readonly pids = new Map<number, Stream>();
-
-	constructor(private cb: (p: Packet) => void) {}
-
-	process(buffer: Uint8Array, offset = 0, len = buffer.length - offset): number {
-		const { pmt, pids, cb } = this;
-		const remainder = (PACKET_LEN - this.ptr) % PACKET_LEN;
-
-		// If we ended on a partial packet last
-		// time, finish that packet first.
-		if (remainder > 0) {
-			if (len < remainder) {
-				this.leftover.set(buffer.subarray(offset, offset + len), this.ptr);
-				return 1; // still have an incomplete packet
-			}
-
-			this.leftover.set(buffer.subarray(offset, offset + remainder), this.ptr);
-			const n = demux_packet(pmt, this.lview, 0, pids, cb, true);
-			if (n) return n; // invalid packet
-		}
-
-		len += offset;
-		offset += remainder;
-
-		// Process remaining packets in this chunk
-		const mem = new DataView(buffer.buffer, buffer.byteOffset);
-		for (let ptr = offset;;ptr += PACKET_LEN) {
-			const datalen = len - ptr;
-			this.ptr = datalen;
-			if (datalen === 0) return 0; // complete packet
-			if (datalen < PACKET_LEN) {
-				this.leftover.set(buffer.subarray(ptr, ptr + datalen));
-				return 1; // incomplete packet
-			}
-
-			const n = demux_packet(pmt, mem, ptr, pids, cb, false);
-			if (n) return n // invalid packet
-		}
-	}
-
-	finalize(): void {
-		const { pids, cb } = this;
-		for (const s of pids.values()) {
-			const packet = s.finalize();
-			if (packet) cb(packet);
-		}
-	}
 }
