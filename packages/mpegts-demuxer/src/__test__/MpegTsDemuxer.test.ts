@@ -1,7 +1,8 @@
-import { MpegTsDemuxer } from '../'
+import { MpegTsDemuxer } from '..'
 
 describe('MpegTsDemuxer', () => {
-	it('should be a class', () => {
-		expect(MpegTsDemuxer).toBe()
+	it('should be a constructor', () => {
+		const demuxer = new MpegTsDemuxer(() => {})
+		expect(demuxer).toBeInstanceOf(MpegTsDemuxer)
 	})
 })
