@@ -12,6 +12,7 @@ import type {
 } from '../classes'
 import {
 	STREAM_TYPES,
+	MEDIA_TYPES,
 	PACKET_LEN,
 } from '../constants'
 import {
@@ -58,15 +59,15 @@ export function getMediaType(type_id: number): number {
 		case 0x80: // mpeg2_video
 		case 0x1b: // h264_video
 		case 0xea: // vc1_video
-			return STREAM_TYPES.video
+			return MEDIA_TYPES.video
 		case 0x81: // ac3_audio
 		case 0x06: // ac3_audio
 		case 0x03: // mpeg2_audio
 		case 0x04: // mpeg2_audio
 		case 0x0f: // aac_audio
-			return STREAM_TYPES.audio
+			return MEDIA_TYPES.audio
 		default:
-			return STREAM_TYPES.unknown
+			return MEDIA_TYPES.unknown
 	}
 }
 
@@ -279,7 +280,7 @@ function decodePes(
 					if (pts > s.last_pts || !s.has_pts) { s.last_pts = pts }
 
 					if (s.first_pts === 0
-						&& s.frame_num === (s.content_type === STREAM_TYPES.video ? 1 : 0)) {
+						&& s.frame_num === (s.content_type === MEDIA_TYPES.video ? 1 : 0)) {
 						s.first_pts = pts
 					}
 
@@ -297,7 +298,7 @@ function decodePes(
 					if (pts > s.last_pts || !s.has_pts) { s.last_pts = pts }
 
 					if (s.first_pts === 0
-						&& s.frame_num === (s.content_type === STREAM_TYPES.video ? 1 : 0)) {
+						&& s.frame_num === (s.content_type === MEDIA_TYPES.video ? 1 : 0)) {
 						s.first_pts = pts
 					}
 
@@ -317,7 +318,7 @@ function decodePes(
 		}
 	}
 
-	if (s.stream_id && s.content_type !== STREAM_TYPES.unknown) {
+	if (s.stream_id && s.content_type !== MEDIA_TYPES.unknown) {
 		const packet = s.write(mem, ptr, len, pstart, copy)
 		if (packet) cb(packet)
 	}
