@@ -46,37 +46,27 @@ export class MpegTsDemuxer extends Transform {
 		callback()
 	}
 
-	private process(
-		buffer: Uint8Array,
-		startingOffset = 0,
-		startingLen = buffer.length - startingOffset,
-	): number {
+	private process(buffer: Uint8Array): number {
 		const { pmt, pids, cb } = this
 		const remainder = (PACKET_LEN - this.ptr) % PACKET_LEN
-
-		let offset = startingOffset
-		let len = startingLen
 
 		// If we ended on a partial packet last
 		// time, finish that packet first.
 		if (remainder > 0) {
-			if (len < remainder) {
-				this.leftover.set(buffer.subarray(offset, offset + len), this.ptr)
+			if (buffer.length < remainder) {
+				this.leftover.set(buffer, this.ptr)
 				return 1 // still have an incomplete packet
 			}
 
-			this.leftover.set(buffer.subarray(offset, offset + remainder), this.ptr)
+			this.leftover.set(buffer, this.ptr)
 			const n = demuxPacket(pmt, this.lview, 0, pids, cb, true)
 			if (n) return n // invalid packet
 		}
 
-		len += offset
-		offset += remainder
-
 		// Process remaining packets in this chunk
-		const mem = new DataView(buffer.buffer, buffer.byteOffset)
-		for (let ptr = offset; ; ptr += PACKET_LEN) {
-			const datalen = len - ptr
+		const mem = new DataView(buffer.buffer)
+		for (let ptr = 0; ; ptr += PACKET_LEN) {
+			const datalen = buffer.length - ptr
 			this.ptr = datalen
 			if (datalen === 0) return 0 // complete packet
 			if (datalen < PACKET_LEN) {
