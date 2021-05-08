@@ -2,7 +2,7 @@
 
 This package demuxes packets from an [MPEG transport stream](https://en.wikipedia.org/wiki/MPEG_transport_stream).
 
-It is a fork of the excellent [TSDemuxer package](https://github.com/gliese1337/HLS.js/tree/master/demuxer) created by [Logan Kearsley](https://github.com/gliese1337).  The overall project was started as a JavaScript / TypeScript implementation of [Anton Burdinuk's C++ MPEG-TS demuxer](https://github.com/clark15b/tsdemuxer/blob/67a20b47dd4a11282134ee61d390cc64d1083e61/v1.0/tsdemux.cpp).
+It is a modified fork of the excellent [TSDemuxer package](https://github.com/gliese1337/HLS.js/tree/master/demuxer) created by [Logan Kearsley](https://github.com/gliese1337).  The overall project was started as a JavaScript / TypeScript implementation of [Anton Burdinuk's C++ MPEG-TS demuxer](https://github.com/clark15b/tsdemuxer/blob/67a20b47dd4a11282134ee61d390cc64d1083e61/v1.0/tsdemux.cpp).
 
 ## References
 
