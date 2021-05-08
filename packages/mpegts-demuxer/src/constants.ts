@@ -28,11 +28,8 @@ export const ERR_CODES = [
 	'Error 24: PES Header Overflows File Length',
 ]
 
+// http://en.wikipedia.org/wiki/Program-specific_information#Elementary_stream_types
 export const STREAM_TYPES = {
-	unknown: 0,
-	audio: 1,
-	video: 2,
-	// http://en.wikipedia.org/wiki/Program-specific_information#Elementary_stream_types
 	data: 0,
 	mpeg2_video: 1,
 	h264_video: 2,
@@ -41,4 +38,10 @@ export const STREAM_TYPES = {
 	mpeg2_audio: 5,
 	lpcm_audio: 6,
 	aac_audio: 7,
+}
+
+export const MEDIA_TYPES = {
+	unknown: 0,
+	audio: 1,
+	video: 2,
 }
