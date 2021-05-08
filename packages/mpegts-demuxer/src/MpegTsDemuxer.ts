@@ -1,3 +1,5 @@
+import { Transform } from 'stream'
+
 import type {
 	Stream,
 	Packet,
@@ -11,7 +13,7 @@ import {
 	demuxPacket,
 } from './utils'
 
-export class MpegTsDemuxer {
+export class MpegTsDemuxer extends Transform {
 	public readonly pids = new Map<number, Stream>()
 
 	private readonly pmt = new Pmt()
@@ -22,13 +24,29 @@ export class MpegTsDemuxer {
 
 	private ptr = 0
 
-	private readonly cb: (p: Packet) => void
-
-	public constructor(cb: (p: Packet) => void) {
-		this.cb = cb
+	/** @inheritdoc */
+	// https://nodejs.org/api/stream.html#stream_transform_transform_chunk_encoding_callback
+	// eslint-disable-next-line no-underscore-dangle
+	public _transform(
+		chunk: Buffer,
+		encoding: string,
+		callback: () => void,
+	): void {
+		this.process(chunk)
+		callback()
 	}
 
-	public process(
+	/** @inheritdoc */
+	// https://nodejs.org/api/stream.html#stream_transform_flush_callback
+	// eslint-disable-next-line no-underscore-dangle
+	public _flush(
+		callback: () => void,
+	): void {
+		this.finalize()
+		callback()
+	}
+
+	private process(
 		buffer: Uint8Array,
 		startingOffset = 0,
 		startingLen = buffer.length - startingOffset,
@@ -71,11 +89,13 @@ export class MpegTsDemuxer {
 		}
 	}
 
-	public finalize(): void {
+	private finalize(): void {
 		const { pids, cb } = this
 		pids.forEach((s) => {
 			const packet = s.finalize()
 			if (packet) cb(packet)
 		})
 	}
+
+	private readonly cb = (p: Packet): void => { this.push(p) }
 }
