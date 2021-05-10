@@ -24,26 +24,23 @@ export class MpegTsDemuxer extends Transform {
 
 	private ptr = 0
 
-	/** @inheritdoc */
-	// https://nodejs.org/api/stream.html#stream_transform_transform_chunk_encoding_callback
-	// eslint-disable-next-line no-underscore-dangle
-	public _transform(
-		chunk: Buffer,
-		encoding: string,
-		callback: () => void,
-	): void {
-		this.process(chunk)
-		callback()
-	}
 
-	/** @inheritdoc */
-	// https://nodejs.org/api/stream.html#stream_transform_flush_callback
-	// eslint-disable-next-line no-underscore-dangle
-	public _flush(
-		callback: () => void,
-	): void {
-		this.finalize()
-		callback()
+	public constructor() {
+		super({
+			readableObjectMode: true,
+			flush: (callback: () => void) => {
+				this.finalize()
+				callback()
+			},
+			transform: (
+				chunk: Buffer,
+				encoding: string,
+				callback: () => void,
+			): void => {
+				this.process(chunk)
+				callback()
+			},
+		})
 	}
 
 	private process(buffer: Uint8Array): number {
