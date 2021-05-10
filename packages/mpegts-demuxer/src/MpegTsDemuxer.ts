@@ -18,12 +18,7 @@ export class MpegTsDemuxer extends Transform {
 
 	private readonly pmt = new Pmt()
 
-	private readonly leftover = new Uint8Array(PACKET_LEN)
-
-	private readonly lview = new DataView(this.leftover.buffer)
-
-	private ptr = 0
-
+	private unprocessed = Buffer.alloc(0)
 
 	public constructor() {
 		super({
@@ -43,37 +38,22 @@ export class MpegTsDemuxer extends Transform {
 		})
 	}
 
-	private process(buffer: Uint8Array): number {
+	private process(chunk: Uint8Array): void {
 		const { pmt, pids, cb } = this
-		const remainder = (PACKET_LEN - this.ptr) % PACKET_LEN
 
-		// If we ended on a partial packet last
-		// time, finish that packet first.
-		if (remainder > 0) {
-			if (buffer.length < remainder) {
-				this.leftover.set(buffer, this.ptr)
-				return 1 // still have an incomplete packet
-			}
+		// Add the chunk to the unprocessed data
+		this.unprocessed = Buffer.concat([this.unprocessed, chunk])
+		const mem = new DataView(this.unprocessed.buffer)
 
-			this.leftover.set(buffer, this.ptr)
-			const n = demuxPacket(pmt, this.lview, 0, pids, cb, true)
-			if (n) return n // invalid packet
+		// Loop through all the data
+		let ptr = 0
+		while (this.unprocessed.length - ptr >= PACKET_LEN) {
+			// Demux packet will return the number of bytes it has analyzed, or zero if a full
+			// packet was consumed
+			const consumedBytes = demuxPacket(pmt, mem, ptr, pids, cb, false) || PACKET_LEN
+			ptr += consumedBytes
 		}
-
-		// Process remaining packets in this chunk
-		const mem = new DataView(buffer.buffer)
-		for (let ptr = 0; ; ptr += PACKET_LEN) {
-			const datalen = buffer.length - ptr
-			this.ptr = datalen
-			if (datalen === 0) return 0 // complete packet
-			if (datalen < PACKET_LEN) {
-				this.leftover.set(buffer.subarray(ptr, ptr + datalen))
-				return 1 // incomplete packet
-			}
-
-			const n = demuxPacket(pmt, mem, ptr, pids, cb, false)
-			if (n) return n // invalid packet
-		}
+		this.unprocessed = this.unprocessed.slice(ptr)
 	}
 
 	private finalize(): void {

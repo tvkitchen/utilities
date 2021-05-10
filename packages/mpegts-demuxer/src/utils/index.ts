@@ -371,3 +371,21 @@ export function demuxPacket(
 	}
 	return decodePes(mem, ptr, len, s, payloadStart, cb, copy)
 }
+
+export function getNextSyncByte(
+	data: Buffer,
+	fromIndex?: number,
+): number {
+	return data.indexOf(0x47, fromIndex)
+}
+
+export function sliceFromNextSyncByte(
+	data: Buffer,
+	fromIndex?: number,
+): Buffer {
+	const ptr = getNextSyncByte(data, fromIndex)
+	if (ptr === -1) {
+		return Buffer.alloc(0)
+	}
+	return data.slice(ptr)
+}
