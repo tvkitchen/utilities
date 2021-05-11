@@ -18,75 +18,42 @@ export class MpegTsDemuxer extends Transform {
 
 	private readonly pmt = new Pmt()
 
-	private readonly leftover = new Uint8Array(PACKET_LEN)
+	private unprocessed = Buffer.alloc(0)
 
-	private readonly lview = new DataView(this.leftover.buffer)
-
-	private ptr = 0
-
-	/** @inheritdoc */
-	// https://nodejs.org/api/stream.html#stream_transform_transform_chunk_encoding_callback
-	// eslint-disable-next-line no-underscore-dangle
-	public _transform(
-		chunk: Buffer,
-		encoding: string,
-		callback: () => void,
-	): void {
-		this.process(chunk)
-		callback()
+	public constructor() {
+		super({
+			readableObjectMode: true,
+			flush: (callback: () => void) => {
+				this.finalize()
+				callback()
+			},
+			transform: (
+				chunk: Buffer,
+				encoding: string,
+				callback: () => void,
+			): void => {
+				this.process(chunk)
+				callback()
+			},
+		})
 	}
 
-	/** @inheritdoc */
-	// https://nodejs.org/api/stream.html#stream_transform_flush_callback
-	// eslint-disable-next-line no-underscore-dangle
-	public _flush(
-		callback: () => void,
-	): void {
-		this.finalize()
-		callback()
-	}
-
-	private process(
-		buffer: Uint8Array,
-		startingOffset = 0,
-		startingLen = buffer.length - startingOffset,
-	): number {
+	private process(chunk: Uint8Array): void {
 		const { pmt, pids, cb } = this
-		const remainder = (PACKET_LEN - this.ptr) % PACKET_LEN
 
-		let offset = startingOffset
-		let len = startingLen
+		// Add the chunk to the unprocessed data
+		this.unprocessed = Buffer.concat([this.unprocessed, chunk])
+		const mem = new DataView(this.unprocessed.buffer)
 
-		// If we ended on a partial packet last
-		// time, finish that packet first.
-		if (remainder > 0) {
-			if (len < remainder) {
-				this.leftover.set(buffer.subarray(offset, offset + len), this.ptr)
-				return 1 // still have an incomplete packet
-			}
-
-			this.leftover.set(buffer.subarray(offset, offset + remainder), this.ptr)
-			const n = demuxPacket(pmt, this.lview, 0, pids, cb, true)
-			if (n) return n // invalid packet
+		// Loop through all the data
+		let ptr = 0
+		while (this.unprocessed.length - ptr >= PACKET_LEN) {
+			// Demux packet will return the number of bytes it has analyzed, or zero if a full
+			// packet was consumed
+			const consumedBytes = demuxPacket(pmt, mem, ptr, pids, cb, false) || PACKET_LEN
+			ptr += consumedBytes
 		}
-
-		len += offset
-		offset += remainder
-
-		// Process remaining packets in this chunk
-		const mem = new DataView(buffer.buffer, buffer.byteOffset)
-		for (let ptr = offset; ; ptr += PACKET_LEN) {
-			const datalen = len - ptr
-			this.ptr = datalen
-			if (datalen === 0) return 0 // complete packet
-			if (datalen < PACKET_LEN) {
-				this.leftover.set(buffer.subarray(ptr, ptr + datalen))
-				return 1 // incomplete packet
-			}
-
-			const n = demuxPacket(pmt, mem, ptr, pids, cb, false)
-			if (n) return n // invalid packet
-		}
+		this.unprocessed = this.unprocessed.slice(ptr)
 	}
 
 	private finalize(): void {
