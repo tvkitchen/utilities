@@ -1,12 +1,21 @@
 {
   "name": "mpegts-demuxer",
-  "description": "Extracts packets from an MPEG transport stream.",
-  "version": "0.0.0",
+  "description": "Demuxes an MPEG Transport Stream into elementary packets.",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/tvkitchen/utilities.git",
     "directory": "packages/mpegts-demuxer"
   },
+  "keywords": [
+    "mpeg",
+    "mpeg-ts",
+    "video",
+    "demuxer",
+    "tv",
+    "transform",
+    "tvkitchen"
+  ],
   "license": "LGPL-3.0",
   "main": "lib/index.js",
   "publishConfig": {
