@@ -6,6 +6,12 @@
 // Changing this is a goal, but will be a heavy lift.
 /* eslint-disable no-param-reassign */
 
+import {
+	leftShift,
+	rightShift,
+	bitMask,
+} from './bitwiseOperators'
+
 import type {
 	Pmt,
 	Packet,
@@ -72,11 +78,18 @@ export function getMediaType(type_id: number): number {
 }
 
 export function decodeTs(mem: DataView, p: number): number {
-	return ((mem.getUint8(p) & 0xe) << 29)
-				| ((mem.getUint8(p + 1) & 0xff) << 22)
-				| ((mem.getUint8(p + 2) & 0xfe) << 14)
-				| ((mem.getUint8(p + 3) & 0xff) << 7)
-				| ((mem.getUint8(p + 4) & 0xfe) >> 1)
+	const pieces = [
+		bitMask(mem.getUint8(p), 0b00001110),
+		bitMask(mem.getUint8(p + 1), 0b11111111),
+		bitMask(mem.getUint8(p + 2), 0b11111110),
+		bitMask(mem.getUint8(p + 3), 0b11111111),
+		bitMask(mem.getUint8(p + 4), 0b11111110),
+	]
+	return leftShift(pieces[0], 29)
+		+ leftShift(pieces[1], 22)
+		+ leftShift(pieces[2], 14)
+		+ leftShift(pieces[3], 7)
+		+ rightShift(pieces[4], 1)
 }
 
 export function decodePat(
