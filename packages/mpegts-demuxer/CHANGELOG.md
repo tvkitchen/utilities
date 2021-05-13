@@ -12,3 +12,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - The package is now much more compliant with our linting rules.
 - Large PTS and DTS values no longer result in int overflows.
+- MpegTsDemuxer now adheres to the Transform Stream API.
