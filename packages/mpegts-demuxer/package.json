@@ -1,5 +1,5 @@
 {
-  "name": "@tvkitchen/mpegts-demuxer",
+  "name": "mpegts-demuxer",
   "description": "Extracts packets from an MPEG transport stream.",
   "version": "0.0.0",
   "repository": {
