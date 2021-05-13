@@ -11,6 +11,7 @@ import {
 } from './classes'
 import {
 	demuxPacket,
+	getSafeDataView,
 } from './utils'
 
 export class MpegTsDemuxer extends Transform {
@@ -43,7 +44,7 @@ export class MpegTsDemuxer extends Transform {
 
 		// Add the chunk to the unprocessed data
 		this.unprocessed = Buffer.concat([this.unprocessed, chunk])
-		const mem = new DataView(this.unprocessed.buffer)
+		const mem = getSafeDataView(this.unprocessed)
 
 		// Loop through all the data
 		let ptr = 0

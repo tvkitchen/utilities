@@ -384,3 +384,24 @@ export function demuxPacket(
 	}
 	return decodePes(mem, ptr, len, s, payloadStart, cb, copy)
 }
+
+/**
+ * Returns a DataView that is safe, regardless of whether or not the input
+ * Buffer is smaller than the buffer pool size.pool.
+ *
+ * The slicing and dicing is what makes it safe.
+ *
+ * For more information about why this is necessary view:
+ * - https://github.com/tvkitchen/utilities/issues/13
+ *
+ * @param  {Buffer}   data [description]
+ * @return {DataView}      [description]
+ */
+export function getSafeDataView(data: Buffer): DataView {
+	return new DataView(
+		data.buffer.slice(
+			data.byteOffset,
+			data.byteOffset + data.byteLength,
+		),
+	)
+}
