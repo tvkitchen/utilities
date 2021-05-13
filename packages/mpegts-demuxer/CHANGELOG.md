@@ -1,4 +1,4 @@
-# Changelog for @tvkitchen/mpegts-demuxer
+# Changelog for mpegts-demuxer
 
 All notable changes to this project will be documented in this file.
 
