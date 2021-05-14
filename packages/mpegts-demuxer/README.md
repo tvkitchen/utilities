@@ -12,7 +12,7 @@ The `MpegTsDemuxer` is a NodeJS [`Transform` stream](https://nodejs.org/api/stre
 import { MpegTsDemuxer } from 'mpegts-demuxer'
 import { createReadStream } from 'fs'
 
-const fileStream = fs.createReadStream('myFile.ts')
+const fileStream = createReadStream('myFile.ts')
 const mpegTsDemuxer = new MpegTsDemuxer()
 fileStream.pipe(mpegTsDemuxer)
 mpegTsDemuxer.on('data', (packet) => {
