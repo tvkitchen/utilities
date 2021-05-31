@@ -290,7 +290,7 @@ function decodePes(
 					const pts = decodeTs(mem, ptr + 3)
 
 					if (s.has_dts && pts !== s.dts) { s.frame_ticks = pts - s.dts }
-					if (pts > s.last_pts || !s.has_pts) { s.last_pts = pts }
+					s.last_pts = pts
 
 					if (s.first_pts === 0
 						&& s.frame_num === (s.content_type === MEDIA_TYPES.video ? 1 : 0)) {
@@ -308,7 +308,7 @@ function decodePes(
 					const dts = decodeTs(mem, ptr + 8)
 
 					if (s.has_dts && dts > s.dts) { s.frame_ticks = dts - s.dts }
-					if (pts > s.last_pts || !s.has_pts) { s.last_pts = pts }
+					s.last_pts = pts
 
 					if (s.first_pts === 0
 						&& s.frame_num === (s.content_type === MEDIA_TYPES.video ? 1 : 0)) {
